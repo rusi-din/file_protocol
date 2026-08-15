@@ -4,16 +4,20 @@
     <string name="status_stopped">Server stopped</string>
     <string name="status_running">Server running</string>
     <string name="status_label">Status</string>
-    <string name="ip_label">Reachable URL</string>
+    <string name="ip_label">Access URL</string>
     <string name="folder_label">Saved folder</string>
     <string name="port_hint">Port</string>
     <string name="start_server">Start server</string>
     <string name="stop_server">Stop server</string>
     <string name="copy_url">Copy URL</string>
     <string name="instructions_title">How to use</string>
-    <string name="instructions_body">1. Turn on your phone hotspot.\n2. Start the server in this app.\n3. Connect another device to your hotspot.\n4. Open the shown URL in a browser.\n5. Drag a file onto the page or choose a file and upload it.</string>
+    <string name="instructions_body">1. Turn on your phone hotspot.\n2. Start the server in this app.\n3. Connect another device to your hotspot.\n4. Open the shown `.local` URL in a browser. If needed, use the IP URL fallback.\n5. Upload files to the phone or download shared files from the phone.</string>
     <string name="last_upload_none">No files uploaded yet</string>
     <string name="last_upload_prefix">Last upload: %1$s</string>
     <string name="url_unavailable">Connect the phone to hotspot or Wi-Fi, then start the server.</string>
     <string name="saved_folder_value">Downloads/HotspotDrop</string>
+    <string name="share_note">Connected devices can upload to the phone and download shared files from it.</string>
+    <string name="diag_title">Diagnostics</string>
+    <string name="diag_button">Run diagnostics</string>
+    <string name="diag_running">Running diagnostics\u2026</string>
 </resources>

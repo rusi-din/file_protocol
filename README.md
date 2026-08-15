@@ -2,13 +2,15 @@
 
 Android app that turns your phone into a local file drop point.
 
-When you enable your phone hotspot and start the server in the app, any device connected to that hotspot can open the shown URL in a browser and upload a file to the phone.
+When you enable your phone hotspot and start the server in the app, any device connected to that hotspot can open the shown URL in a browser and upload files to the phone or download shared files from it.
 
 ## What It Does
 
 - Starts a local HTTP server on the phone
-- Shows the reachable local URL
+- Advertises a `.local` hostname for easier local access
+- Shows the local hostname and IP fallback URLs
 - Accepts drag and drop uploads from another device browser
+- Lists shared files for download from connected devices
 - Saves uploaded files into `Downloads/HotspotDrop`
 
 ## Project Notes
@@ -25,8 +27,8 @@ When you enable your phone hotspot and start the server in the app, any device c
 3. Run the app on an Android phone.
 4. Turn on your phone hotspot.
 5. Tap `Start server` in the app.
-6. From a connected device, open the displayed `http://...` URL.
-7. Drag a file onto the page or choose a file to upload.
+6. From a connected device, open the displayed `.local` URL in a browser. If needed, use the IP fallback URL.
+7. Drag a file onto the page to upload, or download any file listed on the page.
 
 ## Current Limitation
 

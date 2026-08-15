@@ -38,4 +38,5 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.google.android.material:material:1.12.0")
     implementation("org.nanohttpd:nanohttpd:2.3.1")
+    implementation("org.jmdns:jmdns:3.5.11")
 }
