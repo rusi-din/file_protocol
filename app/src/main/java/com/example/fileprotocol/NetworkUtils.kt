@@ -32,6 +32,34 @@ object NetworkUtils {
     }
 
     /**
+     * Returns the phone's IP address on the hotspot subnet, which is also the
+     * gateway IP that DHCP hands to connecting clients as their DNS server.
+     *
+     * Android hotspot subnets and their typical gateway IPs:
+     *   192.168.43.0/24  → 192.168.43.1   (AOSP default)
+     *   192.168.49.0/24  → 192.168.49.1   (Wi-Fi Direct / some OEMs)
+     *   10.0.0.0/24      → 10.0.0.1       (some OEMs)
+     *
+     * We match any address ending in .1 on one of these subnets, which is the
+     * address the DNS server should bind to and return in A-record answers.
+     */
+    fun getHotspotGatewayIp(): String? {
+        return getPrivateIpv4Addresses().firstOrNull { ip ->
+            (ip.startsWith("192.168.43.") ||
+                ip.startsWith("192.168.49.") ||
+                ip.startsWith("10.0.0.")) &&
+                ip.endsWith(".1")
+        }
+            // If the device uses a non-standard subnet or the last octet isn't
+            // .1, fall back to any hotspot-range address.
+            ?: getPrivateIpv4Addresses().firstOrNull { ip ->
+                ip.startsWith("192.168.43.") ||
+                    ip.startsWith("192.168.49.") ||
+                    ip.startsWith("10.0.0.")
+            }
+    }
+
+    /**
      * Runs a lightweight HTTP GET to the given base URL and returns true when the
      * server responds with a 2xx status within [timeoutMs] milliseconds.
      */
@@ -69,12 +97,8 @@ object NetworkUtils {
         sb.appendLine("Network addresses: ${if (addresses.isEmpty()) "none found" else addresses.joinToString()}")
 
         // 2. Hotspot interface detection
-        val hotspotAddress = addresses.firstOrNull {
-            it.startsWith("192.168.43.") ||
-                it.startsWith("192.168.49.") ||
-                it.startsWith("10.0.0.")
-        }
-        sb.appendLine("Hotspot interface: ${hotspotAddress ?: "not detected (non-standard subnet or AP-only mode)"}")
+        val hotspotAddress = getHotspotGatewayIp()
+        sb.appendLine("Hotspot gateway IP: ${hotspotAddress ?: "not detected (non-standard subnet or AP-only mode)"}")
 
         // 3. Hotspot DNS server (friendly name)
         when {

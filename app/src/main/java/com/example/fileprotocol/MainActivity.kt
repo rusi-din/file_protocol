@@ -89,7 +89,10 @@ class MainActivity : AppCompatActivity() {
             server = localServer
             currentPort = port
 
-            val primaryIp = NetworkUtils.getPrivateIpv4Addresses().firstOrNull()
+            // Prefer the hotspot gateway IP (e.g. 192.168.43.1) because that is
+            // the IP clients use as DNS server.  Fall back to any private IP.
+            val hotspotIp = NetworkUtils.getHotspotGatewayIp()
+            val primaryIp = hotspotIp ?: NetworkUtils.getPrivateIpv4Addresses().firstOrNull()
             currentIp = primaryIp
 
             // --- mDNS (best-effort, unreliable on Android hotspot) ---
@@ -99,10 +102,13 @@ class MainActivity : AppCompatActivity() {
             val mdnsName = advertiser?.start(primaryIp!!, port)
             currentHostname = mdnsName
 
-            // --- Hotspot DNS server (the reliable "friendly name" path) ---
+            // --- Hotspot DNS server on port 53 ---
+            // Binds 0.0.0.0 so it works regardless of which interface is active.
+            // resolvedIp is what we return in A-record answers — must be the IP
+            // the client can actually reach, i.e. the hotspot gateway.
             val dnsStarted = if (primaryIp != null) {
                 val dns = HotspotDnsServer(
-                    hostname = HotspotDnsServer.DEFAULT_HOSTNAME,
+                    hostname   = HotspotDnsServer.DEFAULT_HOSTNAME,
                     resolvedIp = primaryIp,
                 )
                 hotspotDns = dns
@@ -111,18 +117,24 @@ class MainActivity : AppCompatActivity() {
 
             dnsHostname = if (dnsStarted) HotspotDnsServer.DEFAULT_HOSTNAME else null
 
-            // Build URL list: friendly name first, then raw IP
+            // Build URL list — friendly name first so copyFirstUrl() copies it
             val friendlyUrl = if (dnsStarted && primaryIp != null) {
                 "http://${HotspotDnsServer.DEFAULT_HOSTNAME}:$port"
             } else null
             currentUrls = buildList {
                 if (friendlyUrl != null) add(friendlyUrl)
-                if (primaryIp != null)  add("http://$primaryIp:$port")
-                if (mdnsName != null)   add("http://$mdnsName:$port")
+                if (primaryIp != null)   add("http://$primaryIp:$port")
+                if (mdnsName != null)    add("http://$mdnsName:$port")
             }.distinct()
 
             statusText.text = "${getString(R.string.status_running)} on port $port"
-            urlText.text = buildUrlDisplayText(friendlyUrl, primaryIp, port, dnsStarted, advertiser?.lastError)
+            urlText.text = buildUrlDisplayText(
+                friendlyUrl  = friendlyUrl,
+                primaryIp    = primaryIp,
+                port         = port,
+                dnsStarted   = dnsStarted,
+                dnsError     = hotspotDns?.lastError,
+            )
 
             startButton.isEnabled = false
             stopButton.isEnabled = true
@@ -161,36 +173,32 @@ class MainActivity : AppCompatActivity() {
     /**
      * Builds the multi-line URL text shown in the UI.
      *
-     * Priority order:
-     *   1. Friendly DNS name  (http://drop:8080)         — shown first, starred
-     *   2. Raw IP             (http://192.168.43.1:8080) — always shown as fallback
-     *   3. mDNS note          — only when mDNS also started successfully
+     * Shows the friendly DNS name first when available, always shows the raw
+     * IP as a fallback, and explains why DNS isn't working when it fails.
      */
     private fun buildUrlDisplayText(
         friendlyUrl: String?,
         primaryIp: String?,
         port: Int,
         dnsStarted: Boolean,
-        mdnsError: String?,
+        dnsError: String?,
     ): String {
-        if (primaryIp == null && !dnsStarted) return getString(R.string.url_unavailable)
+        if (primaryIp == null) return getString(R.string.url_unavailable)
 
         val lines = mutableListOf<String>()
 
         if (dnsStarted && friendlyUrl != null) {
-            lines += "★ $friendlyUrl  ← type this"
-        }
-        if (primaryIp != null) {
-            lines += "http://$primaryIp:$port  (IP fallback)"
-        }
-        if (currentHostname != null) {
-            lines += "http://$currentHostname:$port  (mDNS, may not work on hotspot)"
-        }
-        if (!dnsStarted && hotspotDns?.lastError != null) {
-            lines += "(DNS server unavailable: ${hotspotDns?.lastError})"
+            lines += "★ $friendlyUrl"
         }
 
-        return lines.joinToString("\n").ifBlank { getString(R.string.url_unavailable) }
+        lines += "http://$primaryIp:$port"
+
+        if (!dnsStarted) {
+            val reason = if (dnsError != null) "DNS port 53 unavailable" else "DNS not started"
+            lines += "($reason — use IP above)"
+        }
+
+        return lines.joinToString("\n")
     }
 
     // -------------------------------------------------------------------------

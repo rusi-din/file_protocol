@@ -11,7 +11,7 @@
     <string name="stop_server">Stop server</string>
     <string name="copy_url">Copy URL</string>
     <string name="instructions_title">How to use</string>
-    <string name="instructions_body">1. Turn on your phone hotspot.\n2. Start the server in this app.\n3. Connect another device to your hotspot.\n4. Open  http://drop:8080  in a browser (replace 8080 with your chosen port).\n   If that does not work, use the IP fallback URL shown above.\n5. Upload files to the phone or download shared files from the phone.</string>
+    <string name="instructions_body">1. Turn on your phone hotspot.\n2. Start the server in this app.\n3. Connect another device to your hotspot.\n4. In a browser on that device, open the URL shown above.\n   If &#8220;&#9733; http://drop:PORT&#8221; appears, try that first.\n   If it does not load, use the IP address URL &#8212; it always works.\n5. Upload or download files from the browser.</string>
     <string name="last_upload_none">No files uploaded yet</string>
     <string name="last_upload_prefix">Last upload: %1$s</string>
     <string name="url_unavailable">Connect the phone to hotspot or Wi-Fi, then start the server.</string>
