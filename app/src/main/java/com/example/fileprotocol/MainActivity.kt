@@ -16,9 +16,12 @@ import java.util.concurrent.Executors
 class MainActivity : AppCompatActivity() {
     private var server: HotspotFileServer? = null
     private var dnsAdvertiser: LocalDnsAdvertiser? = null
+    private var hotspotDns: HotspotDnsServer? = null
     private var currentUrls: List<String> = emptyList()
-    private var currentHostname: String? = null
+    private var currentHostname: String? = null   // mDNS .local name, if registered
     private var currentPort: Int? = null
+    private var currentIp: String? = null
+    private var dnsHostname: String? = null        // friendly DNS name, e.g. "drop"
 
     private lateinit var statusText: TextView
     private lateinit var urlText: TextView
@@ -37,15 +40,15 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        statusText    = findViewById(R.id.statusText)
-        urlText       = findViewById(R.id.urlText)
-        folderText    = findViewById(R.id.folderText)
+        statusText     = findViewById(R.id.statusText)
+        urlText        = findViewById(R.id.urlText)
+        folderText     = findViewById(R.id.folderText)
         lastUploadText = findViewById(R.id.lastUploadText)
-        portInput     = findViewById(R.id.portInput)
-        startButton   = findViewById(R.id.startButton)
-        stopButton    = findViewById(R.id.stopButton)
-        copyButton    = findViewById(R.id.copyButton)
-        diagButton    = findViewById(R.id.diagButton)
+        portInput      = findViewById(R.id.portInput)
+        startButton    = findViewById(R.id.startButton)
+        stopButton     = findViewById(R.id.stopButton)
+        copyButton     = findViewById(R.id.copyButton)
+        diagButton     = findViewById(R.id.diagButton)
         diagResultText = findViewById(R.id.diagResultText)
 
         folderText.text = getString(R.string.saved_folder_value)
@@ -86,31 +89,50 @@ class MainActivity : AppCompatActivity() {
             server = localServer
             currentPort = port
 
-            val primaryIpAddress = NetworkUtils.getPrivateIpv4Addresses().firstOrNull()
-            val localHostname = if (primaryIpAddress == null) {
-                null
-            } else {
-                LocalDnsAdvertiser(applicationContext).also { advertiser ->
-                    dnsAdvertiser = advertiser
-                }.start(primaryIpAddress, port)
-            }
-            currentHostname = localHostname
-            currentUrls = NetworkUtils.getReachableBaseUrls(port, localHostname)
+            val primaryIp = NetworkUtils.getPrivateIpv4Addresses().firstOrNull()
+            currentIp = primaryIp
+
+            // --- mDNS (best-effort, unreliable on Android hotspot) ---
+            val advertiser = if (primaryIp != null) {
+                LocalDnsAdvertiser(applicationContext).also { dnsAdvertiser = it }
+            } else null
+            val mdnsName = advertiser?.start(primaryIp!!, port)
+            currentHostname = mdnsName
+
+            // --- Hotspot DNS server (the reliable "friendly name" path) ---
+            val dnsStarted = if (primaryIp != null) {
+                val dns = HotspotDnsServer(
+                    hostname = HotspotDnsServer.DEFAULT_HOSTNAME,
+                    resolvedIp = primaryIp,
+                )
+                hotspotDns = dns
+                dns.start()
+            } else false
+
+            dnsHostname = if (dnsStarted) HotspotDnsServer.DEFAULT_HOSTNAME else null
+
+            // Build URL list: friendly name first, then raw IP
+            val friendlyUrl = if (dnsStarted && primaryIp != null) {
+                "http://${HotspotDnsServer.DEFAULT_HOSTNAME}:$port"
+            } else null
+            currentUrls = buildList {
+                if (friendlyUrl != null) add(friendlyUrl)
+                if (primaryIp != null)  add("http://$primaryIp:$port")
+                if (mdnsName != null)   add("http://$mdnsName:$port")
+            }.distinct()
 
             statusText.text = "${getString(R.string.status_running)} on port $port"
-            urlText.text = if (currentUrls.isEmpty()) {
-                getString(R.string.url_unavailable)
-            } else {
-                currentUrls.joinToString(separator = "\n")
-            }
+            urlText.text = buildUrlDisplayText(friendlyUrl, primaryIp, port, dnsStarted, advertiser?.lastError)
+
             startButton.isEnabled = false
             stopButton.isEnabled = true
-
-            Toast.makeText(this, "Upload server started.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Server started.", Toast.LENGTH_SHORT).show()
         } catch (error: Exception) {
             server = null
             currentPort = null
+            currentIp = null
             currentHostname = null
+            dnsHostname = null
             currentUrls = emptyList()
             statusText.text = getString(R.string.status_stopped)
             urlText.text = error.message ?: getString(R.string.url_unavailable)
@@ -119,17 +141,56 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun stopServer() {
+        hotspotDns?.stop()
+        hotspotDns = null
         dnsAdvertiser?.stop()
         dnsAdvertiser = null
         server?.stop()
         server = null
         currentPort = null
+        currentIp = null
         currentHostname = null
+        dnsHostname = null
         currentUrls = emptyList()
         statusText.text = getString(R.string.status_stopped)
         urlText.text = getString(R.string.url_unavailable)
         startButton.isEnabled = true
         stopButton.isEnabled = false
+    }
+
+    /**
+     * Builds the multi-line URL text shown in the UI.
+     *
+     * Priority order:
+     *   1. Friendly DNS name  (http://drop:8080)         — shown first, starred
+     *   2. Raw IP             (http://192.168.43.1:8080) — always shown as fallback
+     *   3. mDNS note          — only when mDNS also started successfully
+     */
+    private fun buildUrlDisplayText(
+        friendlyUrl: String?,
+        primaryIp: String?,
+        port: Int,
+        dnsStarted: Boolean,
+        mdnsError: String?,
+    ): String {
+        if (primaryIp == null && !dnsStarted) return getString(R.string.url_unavailable)
+
+        val lines = mutableListOf<String>()
+
+        if (dnsStarted && friendlyUrl != null) {
+            lines += "★ $friendlyUrl  ← type this"
+        }
+        if (primaryIp != null) {
+            lines += "http://$primaryIp:$port  (IP fallback)"
+        }
+        if (currentHostname != null) {
+            lines += "http://$currentHostname:$port  (mDNS, may not work on hotspot)"
+        }
+        if (!dnsStarted && hotspotDns?.lastError != null) {
+            lines += "(DNS server unavailable: ${hotspotDns?.lastError})"
+        }
+
+        return lines.joinToString("\n").ifBlank { getString(R.string.url_unavailable) }
     }
 
     // -------------------------------------------------------------------------
@@ -141,18 +202,24 @@ class MainActivity : AppCompatActivity() {
         diagResultText.visibility = View.VISIBLE
         diagButton.isEnabled = false
 
-        val snapshotPort = currentPort
-        val snapshotHostname = currentHostname
-        val snapshotServer = server
-        val serverRunning = snapshotServer != null
+        val snapshotPort      = currentPort
+        val snapshotHostname  = currentHostname
+        val snapshotMdnsError = dnsAdvertiser?.lastError
+        val snapshotDnsName   = dnsHostname
+        val snapshotDnsError  = hotspotDns?.lastError
+        val snapshotServer    = server
+        val serverRunning     = snapshotServer != null
 
         ioExecutor.execute {
             val sharedFileCount = snapshotServer?.listSharedFiles()?.size ?: 0
             val report = NetworkUtils.runDiagnostics(
-                port = snapshotPort,
-                localHostname = snapshotHostname,
+                port           = snapshotPort,
+                localHostname  = snapshotHostname,
+                mdnsError      = snapshotMdnsError,
+                dnsName        = snapshotDnsName,
+                dnsError       = snapshotDnsError,
                 sharedFileCount = sharedFileCount,
-                serverRunning = serverRunning,
+                serverRunning  = serverRunning,
             )
             runOnUiThread {
                 diagResultText.text = report
@@ -171,7 +238,6 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Start the server first.", Toast.LENGTH_SHORT).show()
             return
         }
-
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         clipboard.setPrimaryClip(ClipData.newPlainText("Hotspot URL", url))
         Toast.makeText(this, "URL copied.", Toast.LENGTH_SHORT).show()

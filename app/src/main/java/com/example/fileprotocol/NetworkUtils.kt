@@ -56,6 +56,9 @@ object NetworkUtils {
     fun runDiagnostics(
         port: Int?,
         localHostname: String?,
+        mdnsError: String?,
+        dnsName: String?,
+        dnsError: String?,
         sharedFileCount: Int,
         serverRunning: Boolean,
     ): String {
@@ -65,28 +68,44 @@ object NetworkUtils {
         val addresses = getPrivateIpv4Addresses()
         sb.appendLine("Network addresses: ${if (addresses.isEmpty()) "none found" else addresses.joinToString()}")
 
-        // 2. Hotspot detection heuristic (192.168.43.x / 192.168.x.x on wlan)
-        val hotspotAddress = addresses.firstOrNull { it.startsWith("192.168.43.") }
-        sb.appendLine("Hotspot interface: ${hotspotAddress ?: "not detected (may be AP-only mode)"}")
+        // 2. Hotspot interface detection
+        val hotspotAddress = addresses.firstOrNull {
+            it.startsWith("192.168.43.") ||
+                it.startsWith("192.168.49.") ||
+                it.startsWith("10.0.0.")
+        }
+        sb.appendLine("Hotspot interface: ${hotspotAddress ?: "not detected (non-standard subnet or AP-only mode)"}")
 
-        // 3. mDNS hostname
-        sb.appendLine("mDNS hostname: ${localHostname ?: "not advertised"}")
+        // 3. Hotspot DNS server (friendly name)
+        when {
+            dnsName != null  -> sb.appendLine("Hotspot DNS: active — clients resolve \"$dnsName\" to ${addresses.firstOrNull() ?: "?"}")
+            dnsError != null -> sb.appendLine("Hotspot DNS: failed — $dnsError (port 53 may be taken by system dnsmasq)")
+            else             -> sb.appendLine("Hotspot DNS: not started")
+        }
 
-        // 4. Shared files
+        // 4. mDNS status
+        when {
+            localHostname != null -> sb.appendLine("mDNS: advertised as $localHostname")
+            mdnsError != null     -> sb.appendLine("mDNS: failed — $mdnsError")
+            else                  -> sb.appendLine("mDNS: not started")
+        }
+        sb.appendLine("mDNS note: Android hotspot blocks multicast on most devices — use the friendly name or IP URL instead.")
+
+        // 5. Shared files
         sb.appendLine("Shared files in HotspotDrop: $sharedFileCount")
 
-        // 5. Server reachability
+        // 6. Server reachability
         if (!serverRunning || port == null) {
             sb.appendLine("Server reachability: server not running")
         } else {
-            val ipUrls = addresses.map { "http://$it:$port" }
             val allUrls = buildList {
+                if (!dnsName.isNullOrBlank())      add("http://$dnsName:$port")
                 if (!localHostname.isNullOrBlank()) add("http://$localHostname:$port")
-                addAll(ipUrls)
+                addAll(addresses.map { "http://$it:$port" })
             }
             allUrls.forEach { url ->
                 val reachable = isServerReachable(url)
-                sb.appendLine("  $url → ${if (reachable) "OK" else "unreachable"}")
+                sb.appendLine("  $url → ${if (reachable) "OK ✓" else "unreachable ✗"}")
             }
         }
 
