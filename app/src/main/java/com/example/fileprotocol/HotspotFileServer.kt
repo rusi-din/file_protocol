@@ -5,6 +5,7 @@ import android.content.Context
 import android.provider.MediaStore
 import android.text.TextUtils
 import fi.iki.elonen.NanoHTTPD
+import fi.iki.elonen.NanoHTTPD.Response.Status
 import java.io.File
 import java.net.URLConnection
 
