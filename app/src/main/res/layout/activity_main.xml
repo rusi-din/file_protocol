@@ -4,60 +4,82 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F1F5F9">
+    android:background="#F8FAFC">
 
-    <!-- Header Banner -->
+    <!-- Top App Bar / Header matching screenshot -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#1E293B"
+        android:orientation="horizontal"
         android:paddingHorizontal="20dp"
         android:paddingTop="16dp"
         android:paddingBottom="12dp"
-        android:orientation="horizontal"
         android:gravity="center_vertical">
+
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:src="@drawable/ic_launcher_foreground"
+            android:contentDescription="Icon" />
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="⚡ Hotspot Drop"
-            android:textColor="#FFFFFF"
-            android:textSize="20sp"
+            android:layout_marginStart="10dp"
+            android:text="Hotspot Drop"
+            android:textColor="#0F172A"
+            android:textSize="18sp"
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/globalStatusBadge"
+            android:id="@+id/headerStatusBadge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="OFFLINE"
-            android:textColor="#94A3B8"
-            android:textSize="11sp"
+            android:text="● Ready"
+            android:textColor="#16A34A"
+            android:textSize="12sp"
             android:textStyle="bold"
-            android:background="#334155"
+            android:background="#DCFCE7"
             android:paddingHorizontal="10dp"
             android:paddingVertical="4dp" />
     </LinearLayout>
 
-    <!-- Top App Navigation Tabs -->
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tabLayout"
+    <!-- Pill Switcher Tabs: [Host Network] [Join Host] matching image -->
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#0F172A"
-        app:tabIndicatorColor="#38BDF8"
-        app:tabSelectedTextColor="#38BDF8"
-        app:tabTextColor="#94A3B8"
-        app:tabIndicatorHeight="3dp">
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Host Network (Server)" />
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Join Network (Client)" />
-    </com.google.android.material.tabs.TabLayout>
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginBottom="12dp"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="#E2E8F0"
+        app:cardBackgroundColor="#F1F5F9">
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabLayout"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="@null"
+            app:tabBackground="@null"
+            app:tabIndicatorColor="#0F172A"
+            app:tabIndicatorHeight="36dp"
+            app:tabIndicatorFullWidth="true"
+            app:tabSelectedTextColor="#FFFFFF"
+            app:tabTextColor="#64748B">
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Host Network" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Join Host" />
+        </com.google.android.material.tabs.TabLayout>
+    </com.google.android.material.card.MaterialCardView>
 
     <!-- Main Content Frame -->
     <FrameLayout
@@ -66,7 +88,7 @@
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <!-- ==================== HOST VIEW ==================== -->
+        <!-- ==================== HOST NETWORK TAB (Right Panel in Screenshot) ==================== -->
         <ScrollView
             android:id="@+id/hostView"
             android:layout_width="match_parent"
@@ -77,17 +99,19 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:paddingHorizontal="20dp"
+                android:paddingBottom="20dp">
 
-                <!-- Server Control Card -->
+                <!-- DIRECT GATEWAY CARD with QR Code & URL -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:cardCornerRadius="16dp"
-                    app:cardElevation="3dp"
+                    app:cardElevation="0dp"
                     app:strokeWidth="1dp"
-                    app:strokeColor="#CBD5E1"
-                    android:layout_marginBottom="16dp">
+                    app:strokeColor="#E2E8F0"
+                    app:cardBackgroundColor="#FFFFFF"
+                    android:layout_marginBottom="12dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -105,36 +129,138 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="Server Controls"
-                                android:textColor="#0F172A"
-                                android:textSize="17sp"
-                                android:textStyle="bold" />
+                                android:text="DIRECT GATEWAY"
+                                android:textColor="#94A3B8"
+                                android:textSize="11sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.08" />
 
                             <TextView
-                                android:id="@+id/statusBadge"
+                                android:id="@+id/peersConnectedText"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="STOPPED"
-                                android:textColor="#DC2626"
-                                android:textStyle="bold"
-                                android:textSize="11sp"
-                                android:background="#FEE2E2"
-                                android:paddingHorizontal="10dp"
-                                android:paddingVertical="4dp" />
+                                android:text="● 0 peers connected"
+                                android:textColor="#64748B"
+                                android:textSize="11sp" />
                         </LinearLayout>
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
-                            android:layout_marginTop="12dp"
+                            android:gravity="center_vertical"
+                            android:layout_marginTop="12dp">
+
+                            <ImageView
+                                android:id="@+id/qrImageView"
+                                android:layout_width="90dp"
+                                android:layout_height="90dp"
+                                android:scaleType="fitCenter"
+                                android:background="#F8FAFC"
+                                android:padding="4dp"
+                                android:contentDescription="QR Code" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:layout_marginStart="14dp">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Endpoint URL"
+                                    android:textColor="#64748B"
+                                    android:textSize="12sp" />
+
+                                <TextView
+                                    android:id="@+id/urlText"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="http://192.168.43.1:8080"
+                                    android:textColor="#0F172A"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"
+                                    android:textIsSelectable="true" />
+
+                                <Button
+                                    android:id="@+id/copyButton"
+                                    style="@style/Widget.Material3.Button.OutlinedButton"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="36dp"
+                                    android:layout_marginTop="8dp"
+                                    android:paddingHorizontal="14dp"
+                                    android:text="📋 Copy Link"
+                                    android:textColor="#0F172A"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- SERVER ENGINE CONTROL CARD -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="#E2E8F0"
+                    app:cardBackgroundColor="#FFFFFF"
+                    android:layout_marginBottom="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
                             android:gravity="center_vertical">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Server Engine"
+                                android:textColor="#0F172A"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/serverEngineStatusBadge"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="● Offline"
+                                android:textColor="#EF4444"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/serverEngineListeningText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Listening on 192.168.43.1:8080"
+                            android:textColor="#64748B"
+                            android:textSize="12sp"
+                            android:layout_marginTop="2dp" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginTop="12dp">
 
                             <com.google.android.material.textfield.TextInputLayout
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:hint="Port"
+                                android:hint="PORT"
                                 app:boxBackgroundMode="outline">
 
                                 <com.google.android.material.textfield.TextInputEditText
@@ -142,22 +268,24 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:inputType="number"
-                                    android:text="8080" />
+                                    android:text="8080"
+                                    android:textSize="13sp" />
                             </com.google.android.material.textfield.TextInputLayout>
 
                             <com.google.android.material.textfield.TextInputLayout
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:layout_marginStart="8dp"
-                                android:hint="PIN Protection"
+                                android:layout_marginStart="10dp"
+                                android:hint="AUTH PIN"
                                 app:boxBackgroundMode="outline">
 
                                 <com.google.android.material.textfield.TextInputEditText
                                     android:id="@+id/pinInput"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:inputType="numberPassword" />
+                                    android:inputType="numberPassword"
+                                    android:textSize="13sp" />
                             </com.google.android.material.textfield.TextInputLayout>
                         </LinearLayout>
 
@@ -169,34 +297,55 @@
 
                             <Button
                                 android:id="@+id/startButton"
+                                style="@style/Widget.Material3.Button.OutlinedButton"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:text="Start Server"
-                                android:backgroundTint="#0284C7" />
+                                android:textColor="#0F172A" />
 
                             <Button
                                 android:id="@+id/stopButton"
+                                style="@style/Widget.Material3.Button.OutlinedButton"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:layout_marginStart="8dp"
                                 android:enabled="false"
                                 android:text="Stop Server"
-                                android:backgroundTint="#EF4444" />
+                                android:textColor="#EF4444" />
                         </LinearLayout>
+
+                        <Button
+                            android:id="@+id/diagButton"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Run Network Diagnostics"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/diagResultText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:fontFamily="monospace"
+                            android:textColor="#475569"
+                            android:textSize="11sp"
+                            android:visibility="gone" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- URL & QR Access Card -->
+                <!-- QUICK BROADCAST CARD -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:cardCornerRadius="16dp"
-                    app:cardElevation="3dp"
+                    app:cardElevation="0dp"
                     app:strokeWidth="1dp"
-                    app:strokeColor="#CBD5E1"
-                    android:layout_marginBottom="16dp">
+                    app:strokeColor="#E2E8F0"
+                    app:cardBackgroundColor="#FFFFFF"
+                    android:layout_marginBottom="12dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -207,129 +356,64 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Access URL &amp; QR Code"
-                            android:textColor="#0F172A"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
+                            android:text="QUICK BROADCAST"
+                            android:textColor="#94A3B8"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.08" />
 
-                        <TextView
-                            android:id="@+id/urlText"
+                        <EditText
+                            android:id="@+id/hostTextInput"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:text="Start server to generate network URL"
-                            android:textColor="#0284C7"
-                            android:textSize="15sp"
-                            android:textIsSelectable="true" />
+                            android:layout_height="60dp"
+                            android:layout_marginTop="8dp"
+                            android:background="#F8FAFC"
+                            android:padding="10dp"
+                            android:hint="Send clipboard or note directly to connected peers..."
+                            android:textSize="13sp"
+                            android:gravity="top|start" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
                             android:gravity="center_vertical"
-                            android:layout_marginTop="12dp">
+                            android:layout_marginTop="10dp">
 
-                            <ImageView
-                                android:id="@+id/qrImageView"
-                                android:layout_width="110dp"
-                                android:layout_height="110dp"
-                                android:scaleType="fitCenter"
-                                android:visibility="gone"
-                                android:contentDescription="QR Code" />
+                            <Button
+                                android:id="@+id/hostUploadFileBtn"
+                                style="@style/Widget.Material3.Button.OutlinedButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="38dp"
+                                android:text="📁 Add File"
+                                android:textSize="12sp" />
 
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="vertical"
-                                android:layout_marginStart="12dp">
+                            <View
+                                android:layout_width="0dp"
+                                android:layout_height="1dp"
+                                android:layout_weight="1" />
 
-                                <Button
-                                    android:id="@+id/copyButton"
-                                    style="@style/Widget.Material3.Button.OutlinedButton"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="📋 Copy Address" />
-
-                                <Button
-                                    android:id="@+id/diagButton"
-                                    style="@style/Widget.Material3.Button.TextButton"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="🔧 Diagnostics" />
-                            </LinearLayout>
+                            <Button
+                                android:id="@+id/hostSendTextButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="38dp"
+                                android:text="Send to Peers ▶"
+                                android:textSize="12sp"
+                                android:backgroundTint="#0F172A" />
                         </LinearLayout>
-
-                        <TextView
-                            android:id="@+id/diagResultText"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:fontFamily="monospace"
-                            android:textColor="#475569"
-                            android:textSize="12sp"
-                            android:visibility="gone" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Post Text Snippet Card (Host) -->
+                <!-- SHARED VAULT / ITEMS LIST CARD -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:cardCornerRadius="16dp"
-                    app:cardElevation="3dp"
+                    app:cardElevation="0dp"
                     app:strokeWidth="1dp"
-                    app:strokeColor="#CBD5E1"
-                    android:layout_marginBottom="16dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Broadcast Text Snippet"
-                            android:textColor="#0F172A"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:hint="Type or paste text..."
-                            app:boxBackgroundMode="outline">
-
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/hostTextInput"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:minLines="2"
-                                android:gravity="top|start" />
-                        </com.google.android.material.textfield.TextInputLayout>
-
-                        <Button
-                            android:id="@+id/hostSendTextButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="end"
-                            android:layout_marginTop="8dp"
-                            android:text="Broadcast Note"
-                            android:backgroundTint="#0284C7" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Host Received Items Inspector Card -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="3dp"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="#CBD5E1"
-                    android:layout_marginBottom="16dp">
+                    app:strokeColor="#E2E8F0"
+                    app:cardBackgroundColor="#FFFFFF"
+                    android:layout_marginBottom="12dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -347,69 +431,56 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="Stored Shared Files &amp; Notes"
+                                android:text="Shared Vault"
                                 android:textColor="#0F172A"
-                                android:textSize="16sp"
+                                android:textSize="15sp"
                                 android:textStyle="bold" />
 
-                            <Button
-                                android:id="@+id/hostRefreshBtn"
-                                style="@style/Widget.Material3.Button.TextButton"
+                            <TextView
+                                android:id="@+id/hostVaultBadge"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="🔄 Refresh" />
+                                android:text="0 items"
+                                android:textColor="#64748B"
+                                android:textSize="12sp" />
+
+                            <ImageButton
+                                android:id="@+id/hostRefreshBtn"
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:src="@android:drawable/ic_popup_sync"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                android:contentDescription="Refresh" />
                         </LinearLayout>
-
-                        <TextView
-                            android:id="@+id/hostFolderNotice"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="Saved files location: Downloads/HotspotDrop/"
-                            android:textColor="#64748B"
-                            android:textSize="12sp"
-                            android:layout_marginBottom="8dp" />
-
-                        <TextView
-                            android:id="@+id/hostItemsSummaryText"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="0 Files • 0 Text Notes"
-                            android:textColor="#0284C7"
-                            android:textStyle="bold"
-                            android:textSize="14sp"
-                            android:layout_marginBottom="12dp" />
 
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/hostItemsRecyclerView"
                             android:layout_width="match_parent"
-                            android:layout_height="220dp"
-                            android:background="#F8FAFC"
-                            android:padding="4dp" />
+                            android:layout_height="200dp"
+                            android:layout_marginTop="8dp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Clean AdMob Banner Cutout Card -->
+                <!-- Cutout AdMob Banner Placeholder -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="0dp"
-                    app:strokeWidth="1.5dp"
-                    app:strokeColor="#CBD5E1"
-                    app:cardBackgroundColor="#F8FAFC"
-                    android:layout_marginBottom="16dp">
+                    app:strokeWidth="1dp"
+                    app:strokeColor="#E2E8F0"
+                    app:cardBackgroundColor="#F1F5F9">
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="60dp"
-                        android:gravity="center"
-                        android:orientation="horizontal">
+                        android:layout_height="50dp"
+                        android:gravity="center">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="📢 AdMob Banner Space Placeholder"
-                            android:textColor="#64748B"
+                            android:text="📢 AdMob Banner Cutout Space"
+                            android:textColor="#94A3B8"
                             android:textSize="12sp"
                             android:textStyle="bold" />
                     </LinearLayout>
@@ -418,30 +489,32 @@
             </LinearLayout>
         </ScrollView>
 
-        <!-- ==================== JOIN / CLIENT VIEW ==================== -->
+        <!-- ==================== JOIN HOST TAB (Middle Panel in Screenshot) ==================== -->
         <LinearLayout
             android:id="@+id/clientView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:padding="16dp"
+            android:paddingHorizontal="20dp"
+            android:paddingBottom="20dp"
             android:visibility="gone">
 
-            <!-- Connect Box Card -->
+            <!-- TRANSFER STATUS PROGRESS CARD (Top in screenshot) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="3dp"
+                app:cardElevation="0dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="#CBD5E1"
+                app:strokeColor="#E2E8F0"
+                app:cardBackgroundColor="#FFFFFF"
                 android:layout_marginBottom="12dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="14dp">
+                    android:padding="16dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -450,41 +523,62 @@
                         android:gravity="center_vertical">
 
                         <TextView
+                            android:id="@+id/transferStatusTitle"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Connect to Hotspot Server"
+                            android:text="hotspot-drop-vault"
                             android:textColor="#0F172A"
-                            android:textSize="16sp"
+                            android:textSize="14sp"
                             android:textStyle="bold" />
 
                         <TextView
-                            android:id="@+id/clientConnectionBadge"
+                            android:id="@+id/transferStatusSpeed"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="DISCONNECTED"
-                            android:textColor="#64748B"
-                            android:textStyle="bold"
-                            android:textSize="10sp"
-                            android:background="#E2E8F0"
-                            android:paddingHorizontal="8dp"
-                            android:paddingVertical="3dp" />
+                            android:text="Idle"
+                            android:textColor="#2563EB"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
                     </LinearLayout>
 
-                    <com.google.android.material.textfield.TextInputLayout
+                    <com.google.android.material.progressindicator.LinearProgressIndicator
+                        android:id="@+id/transferProgressBar"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:hint="Server Address (e.g. http://192.168.43.1:8080)"
-                        app:boxBackgroundMode="outline">
+                        android:layout_height="6dp"
+                        android:layout_marginTop="10dp"
+                        android:progress="100"
+                        app:trackCornerRadius="3dp"
+                        app:trackColor="#E2E8F0"
+                        app:indicatorColor="#2563EB" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/clientServerUrlInput"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:inputType="textUri"
-                            android:text="http://192.168.43.1:8080" />
-                    </com.google.android.material.textfield.TextInputLayout>
+            <!-- CONNECT & MANUAL ENDPOINT CARD -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="#E2E8F0"
+                app:cardBackgroundColor="#FFFFFF"
+                android:layout_marginBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="14dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="NEARBY HOST ENDPOINT"
+                        android:textColor="#94A3B8"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.08" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -497,14 +591,16 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:hint="PIN Code (If set)"
+                            android:hint="Host Address (http://192.168.43.1:8080)"
                             app:boxBackgroundMode="outline">
 
                             <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/clientPinInput"
+                                android:id="@+id/clientServerUrlInput"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:inputType="numberPassword" />
+                                android:inputType="textUri"
+                                android:text="http://192.168.43.1:8080"
+                                android:textSize="13sp" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <Button
@@ -513,33 +609,48 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
                             android:text="Connect"
-                            android:backgroundTint="#0284C7" />
+                            android:backgroundTint="#0F172A" />
                     </LinearLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:hint="PIN Code (If host is protected)"
+                        app:boxBackgroundMode="outline">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/clientPinInput"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="numberPassword"
+                            android:textSize="13sp" />
+                    </com.google.android.material.textfield.TextInputLayout>
 
                     <TextView
                         android:id="@+id/clientStatusFeedbackText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
-                        android:text="Enter server address and tap Connect."
+                        android:text="Enter host address and tap Connect."
                         android:textColor="#64748B"
                         android:textSize="12sp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Client Sub-Tabs -->
+            <!-- SHARED FILES & NOTES TAB AREA -->
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/clientSubTabs"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="36dp"
                 android:background="#F1F5F9"
-                app:tabIndicatorColor="#0284C7"
-                app:tabSelectedTextColor="#0284C7"
+                app:tabIndicatorColor="#0F172A"
+                app:tabSelectedTextColor="#0F172A"
                 app:tabTextColor="#64748B">
                 <com.google.android.material.tabs.TabItem
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Files" />
+                    android:text="Shared Files" />
                 <com.google.android.material.tabs.TabItem
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -547,158 +658,66 @@
                 <com.google.android.material.tabs.TabItem
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Send to Server" />
+                    android:text="Post Note" />
             </com.google.android.material.tabs.TabLayout>
 
-            <!-- Client List Frame -->
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="1">
+                android:layout_weight="1"
+                android:layout_marginTop="8dp">
 
-                <LinearLayout
-                    android:id="@+id/clientFilesContainer"
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/clientFilesRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/clientTextsRecyclerView"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="vertical">
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/clientFilesRecyclerView"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent" />
-                </LinearLayout>
+                    android:visibility="gone" />
 
                 <LinearLayout
-                    android:id="@+id/clientTextsContainer"
+                    android:id="@+id/clientSendContainer"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="vertical"
                     android:visibility="gone">
 
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/clientTextsRecyclerView"
+                    <EditText
+                        android:id="@+id/clientSendTextInput"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent" />
-                </LinearLayout>
+                        android:layout_height="80dp"
+                        android:background="#FFFFFF"
+                        android:padding="12dp"
+                        android:hint="Type text note to send to host..."
+                        android:textSize="13sp"
+                        android:gravity="top|start" />
 
-                <ScrollView
-                    android:id="@+id/clientSendContainer"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:visibility="gone">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="8dp">
-
-                        <com.google.android.material.card.MaterialCardView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            app:cardCornerRadius="12dp"
-                            app:strokeWidth="1dp"
-                            app:strokeColor="#CBD5E1"
-                            android:layout_marginBottom="12dp">
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="vertical"
-                                android:padding="14dp">
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Send Text Snippet"
-                                    android:textStyle="bold"
-                                    android:textSize="15sp" />
-
-                                <com.google.android.material.textfield.TextInputLayout
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="8dp"
-                                    android:hint="Type note..."
-                                    app:boxBackgroundMode="outline">
-
-                                    <com.google.android.material.textfield.TextInputEditText
-                                        android:id="@+id/clientSendTextInput"
-                                        android:layout_width="match_parent"
-                                        android:layout_height="wrap_content"
-                                        android:minLines="2" />
-                                </com.google.android.material.textfield.TextInputLayout>
-
-                                <Button
-                                    android:id="@+id/clientSendTextBtn"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_gravity="end"
-                                    android:layout_marginTop="8dp"
-                                    android:text="Send Note"
-                                    android:backgroundTint="#0284C7" />
-                            </LinearLayout>
-                        </com.google.android.material.card.MaterialCardView>
-
-                        <com.google.android.material.card.MaterialCardView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            app:cardCornerRadius="12dp"
-                            app:strokeWidth="1dp"
-                            app:strokeColor="#CBD5E1">
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="vertical"
-                                android:padding="14dp">
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Upload File to Server"
-                                    android:textStyle="bold"
-                                    android:textSize="15sp" />
-
-                                <Button
-                                    android:id="@+id/clientUploadFileBtn"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="12dp"
-                                    android:text="Pick &amp; Upload File"
-                                    android:backgroundTint="#0284C7" />
-                            </LinearLayout>
-                        </com.google.android.material.card.MaterialCardView>
-
-                    </LinearLayout>
-                </ScrollView>
-            </FrameLayout>
-
-            <!-- Clean Cutout AdMob Banner Card (Client Mode) -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="1.5dp"
-                app:strokeColor="#CBD5E1"
-                app:cardBackgroundColor="#F8FAFC"
-                android:layout_marginTop="8dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-
-                    <TextView
+                    <Button
+                        android:id="@+id/clientSendTextBtn"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="📢 AdMob Banner Space Placeholder"
-                        android:textColor="#64748B"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:layout_gravity="end"
+                        android:layout_marginTop="8dp"
+                        android:text="Send Note to Host"
+                        android:backgroundTint="#0F172A" />
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+            </FrameLayout>
+
+            <!-- PROMINENT BOTTOM BUTTON: "Send Files to Host" matching image -->
+            <Button
+                android:id="@+id/clientUploadFileBtn"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="8dp"
+                android:text="⬆ Send Files to Host"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:backgroundTint="#0F172A"
+                app:cornerRadius="12dp" />
 
         </LinearLayout>
     </FrameLayout>
