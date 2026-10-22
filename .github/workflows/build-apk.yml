@@ -29,7 +29,7 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
         with:
-          cmdline-tools-version: "11.0"
+          packages: 'platform-tools'
 
       - name: Set up Gradle 8.9
         uses: gradle/actions/setup-gradle@v4
