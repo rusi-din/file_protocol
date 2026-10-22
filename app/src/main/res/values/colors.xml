@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="blue_500">#1565C0</color>
-    <color name="blue_700">#0D47A1</color>
+    <color name="blue_500">#2563EB</color>
+    <color name="blue_700">#1D4ED8</color>
     <color name="white">#FFFFFF</color>
-    <color name="surface">#F5F7FA</color>
-    <color name="text_primary">#1B1F24</color>
+    <color name="surface">#F8FAFC</color>
+    <color name="text_primary">#0F172A</color>
+    <color name="primary_val">#0F172A</color>
+    <color name="secondary_val">#2563EB</color>
+    <color name="neutral_900">#0F172A</color>
 </resources>

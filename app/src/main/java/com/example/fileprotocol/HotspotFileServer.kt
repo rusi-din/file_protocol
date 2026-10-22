@@ -509,6 +509,7 @@ class HotspotFileServer(
               <meta charset="utf-8" />
               <meta name="viewport" content="width=device-width, initial-scale=1" />
               <title>Hotspot Drop</title>
+              <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230F172A'/><path d='M50 15 L25 55 L45 55 L40 85 L75 42 L55 42 Z' fill='%232563EB'/></svg>" type="image/svg+xml" />
               <style>
                 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
                 :root {
