@@ -104,6 +104,10 @@ class HotspotFileServer(
                 (session.method == Method.POST || session.method == Method.DELETE) && session.uri == "/text/delete" ->
                     handleDeleteText(session)
 
+                // Delete Shared File API ("Stop Sharing")
+                (session.method == Method.POST || session.method == Method.DELETE) && session.uri == "/file/delete" ->
+                    handleDeleteFile(session)
+
                 else -> newFixedLengthResponse(Status.NOT_FOUND, "text/plain", "Not found")
             }
         } catch (error: Exception) {
@@ -251,6 +255,27 @@ class HotspotFileServer(
 
         val removed = deleteTextSnippet(id)
         return jsonResponse(Status.OK, """{"success":$removed}""")
+    }
+
+    private fun handleDeleteFile(session: IHTTPSession): Response {
+        val id = session.parameters["id"]?.firstOrNull()?.toLongOrNull()
+            ?: return jsonResponse(Status.BAD_REQUEST, """{"error":"Missing id"}""")
+
+        val removed = deleteSharedFile(id)
+        return jsonResponse(Status.OK, """{"success":$removed}""")
+    }
+
+    fun deleteSharedFile(fileId: Long): Boolean {
+        return try {
+            val fileUri = android.content.ContentUris.withAppendedId(
+                MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+                fileId,
+            )
+            val deletedRows = context.contentResolver.delete(fileUri, null, null)
+            deletedRows > 0
+        } catch (e: Exception) {
+            false
+        }
     }
 
     private fun jsonFileList(): Response {
@@ -808,6 +833,13 @@ class HotspotFileServer(
                     .then(() => fetchTexts());
                 }
 
+                function deleteFile(id) {
+                  if (confirm('Stop sharing and delete this file?')) {
+                    fetch('/file/delete?id=' + id, { method: 'POST' })
+                      .then(() => fetchFiles());
+                  }
+                }
+
                 function previewFile(url, mime, name) {
                   const modal = document.getElementById('previewModal');
                   const body = document.getElementById('modalBody');
@@ -869,6 +901,7 @@ class HotspotFileServer(
                           '<div class="item-actions">' +
                             '<button class="btn btn-secondary btn-sm" onclick="previewFile(\'' + f.previewUrl + '\', \'' + f.mime + '\', \'' + escapeHtml(f.name).replace(/'/g, "\\'") + '\')">View</button>' +
                             '<a class="btn btn-sm" href="' + f.url + '" download="' + escapeHtml(f.name) + '">Download</a>' +
+                            '<button class="btn btn-secondary btn-sm" onclick="deleteFile(' + f.id + ')" style="color:#ef4444;">🗑️</button>' +
                           '</div>' +
                         '</li>';
                       });

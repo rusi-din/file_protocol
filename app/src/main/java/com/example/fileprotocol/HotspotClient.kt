@@ -65,6 +65,34 @@ class HotspotClient(private val context: Context) {
         }
     }
 
+    fun deleteFile(serverUrl: String, id: Long, pin: String? = null, callback: (Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                val cleanUrl = cleanBaseUrl(serverUrl) + "/file/delete?id=$id"
+                val response = makeHttpPost(cleanUrl, "", "application/x-www-form-urlencoded", pin)
+                val obj = JSONObject(response)
+                val success = obj.optBoolean("success", false)
+                callback(Result.success(success))
+            } catch (e: Exception) {
+                callback(Result.failure(e))
+            }
+        }
+    }
+
+    fun deleteText(serverUrl: String, id: Long, pin: String? = null, callback: (Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                val cleanUrl = cleanBaseUrl(serverUrl) + "/text/delete?id=$id"
+                val response = makeHttpPost(cleanUrl, "", "application/x-www-form-urlencoded", pin)
+                val obj = JSONObject(response)
+                val success = obj.optBoolean("success", false)
+                callback(Result.success(success))
+            } catch (e: Exception) {
+                callback(Result.failure(e))
+            }
+        }
+    }
+
     fun sendText(serverUrl: String, text: String, pin: String? = null, callback: (Result<Boolean>) -> Unit) {
         executor.execute {
             try {

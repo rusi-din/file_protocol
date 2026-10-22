@@ -210,14 +210,23 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Please start the server first.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            val text = hostTextInput.text.toString().trim()
+            var text = hostTextInput.text.toString().trim()
+            if (text.isBlank()) {
+                // Auto-sync system clipboard if input field is empty
+                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clipData = clipboard.primaryClip
+                if (clipData != null && clipData.itemCount > 0) {
+                    text = clipData.getItemAt(0).text?.toString().orEmpty()
+                }
+            }
+
             if (text.isNotBlank()) {
                 s.addTextSnippet(text)
                 hostTextInput.setText("")
                 Toast.makeText(this, "Broadcast sent to connected peers!", Toast.LENGTH_SHORT).show()
                 refreshHostItems()
             } else {
-                Toast.makeText(this, "Please enter a note to share.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Enter text or copy something to clipboard first.", Toast.LENGTH_SHORT).show()
             }
         }
     }
