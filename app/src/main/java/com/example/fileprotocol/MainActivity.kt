@@ -4,7 +4,6 @@ import android.app.DownloadManager
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -38,6 +37,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tabLayout: TabLayout
     private lateinit var hostView: ScrollView
     private lateinit var clientView: LinearLayout
+    private lateinit var globalStatusBadge: TextView
     private lateinit var statusBadge: TextView
     private lateinit var urlText: TextView
     private lateinit var portInput: EditText
@@ -51,10 +51,17 @@ class MainActivity : AppCompatActivity() {
     private lateinit var hostTextInput: EditText
     private lateinit var hostSendTextButton: Button
 
+    // Host Items Viewer
+    private lateinit var hostRefreshBtn: Button
+    private lateinit var hostItemsSummaryText: TextView
+    private lateinit var hostItemsRecyclerView: RecyclerView
+
     // Client UI Elements
     private lateinit var clientServerUrlInput: EditText
     private lateinit var clientPinInput: EditText
     private lateinit var clientConnectButton: Button
+    private lateinit var clientConnectionBadge: TextView
+    private lateinit var clientStatusFeedbackText: TextView
     private lateinit var clientSubTabs: TabLayout
     private lateinit var clientFilesContainer: LinearLayout
     private lateinit var clientTextsContainer: LinearLayout
@@ -69,6 +76,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var hotspotClient: HotspotClient
     private lateinit var filesAdapter: FilesAdapter
     private lateinit var textsAdapter: TextsAdapter
+    private lateinit var hostItemsAdapter: TextsAdapter
 
     private val ioExecutor = Executors.newSingleThreadExecutor()
 
@@ -101,6 +109,7 @@ class MainActivity : AppCompatActivity() {
         hostView = findViewById(R.id.hostView)
         clientView = findViewById(R.id.clientView)
 
+        globalStatusBadge = findViewById(R.id.globalStatusBadge)
         statusBadge = findViewById(R.id.statusBadge)
         urlText = findViewById(R.id.urlText)
         portInput = findViewById(R.id.portInput)
@@ -114,9 +123,15 @@ class MainActivity : AppCompatActivity() {
         hostTextInput = findViewById(R.id.hostTextInput)
         hostSendTextButton = findViewById(R.id.hostSendTextButton)
 
+        hostRefreshBtn = findViewById(R.id.hostRefreshBtn)
+        hostItemsSummaryText = findViewById(R.id.hostItemsSummaryText)
+        hostItemsRecyclerView = findViewById(R.id.hostItemsRecyclerView)
+
         clientServerUrlInput = findViewById(R.id.clientServerUrlInput)
         clientPinInput = findViewById(R.id.clientPinInput)
         clientConnectButton = findViewById(R.id.clientConnectButton)
+        clientConnectionBadge = findViewById(R.id.clientConnectionBadge)
+        clientStatusFeedbackText = findViewById(R.id.clientStatusFeedbackText)
         clientSubTabs = findViewById(R.id.clientSubTabs)
         clientFilesContainer = findViewById(R.id.clientFilesContainer)
         clientTextsContainer = findViewById(R.id.clientTextsContainer)
@@ -127,7 +142,7 @@ class MainActivity : AppCompatActivity() {
         clientSendTextBtn = findViewById(R.id.clientSendTextBtn)
         clientUploadFileBtn = findViewById(R.id.clientUploadFileBtn)
 
-        // Setup Client Adapters
+        // Setup Adapters
         filesAdapter = FilesAdapter { file -> downloadFileFromClient(file) }
         clientFilesRecyclerView.layoutManager = LinearLayoutManager(this)
         clientFilesRecyclerView.adapter = filesAdapter
@@ -135,6 +150,10 @@ class MainActivity : AppCompatActivity() {
         textsAdapter = TextsAdapter { text -> copyToClipboard("Shared Text", text) }
         clientTextsRecyclerView.layoutManager = LinearLayoutManager(this)
         clientTextsRecyclerView.adapter = textsAdapter
+
+        hostItemsAdapter = TextsAdapter { text -> copyToClipboard("Server Item", text) }
+        hostItemsRecyclerView.layoutManager = LinearLayoutManager(this)
+        hostItemsRecyclerView.adapter = hostItemsAdapter
     }
 
     private fun setupTabs() {
@@ -170,6 +189,7 @@ class MainActivity : AppCompatActivity() {
         stopButton.setOnClickListener { stopServer() }
         copyButton.setOnClickListener { copyFirstUrl() }
         diagButton.setOnClickListener { runDiagnostics() }
+        hostRefreshBtn.setOnClickListener { refreshHostItems() }
 
         hostSendTextButton.setOnClickListener {
             val s = server
@@ -182,10 +202,45 @@ class MainActivity : AppCompatActivity() {
                 s.addTextSnippet(text)
                 hostTextInput.setText("")
                 Toast.makeText(this, "Text snippet shared on server!", Toast.LENGTH_SHORT).show()
+                refreshHostItems()
             } else {
                 Toast.makeText(this, "Please enter text to share.", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun refreshHostItems() {
+        val s = server
+        if (s == null) {
+            hostItemsSummaryText.text = "Server not running"
+            hostItemsAdapter.updateTexts(emptyList())
+            return
+        }
+
+        val files = s.listSharedFiles()
+        val snippets = s.getTextSnippets()
+
+        hostItemsSummaryText.text = "${files.size} File${if (files.size == 1) "" else "s"} • ${snippets.size} Text Note${if (snippets.size == 1) "" else "s"}"
+
+        val combinedList = mutableListOf<HotspotFileServer.TextSnippet>()
+        files.forEach { f ->
+            combinedList.add(
+                HotspotFileServer.TextSnippet(
+                    id = f.id,
+                    text = "📁 [File] ${f.displayName} (${f.size / 1024} KB)"
+                )
+            )
+        }
+        snippets.forEach { t ->
+            combinedList.add(
+                HotspotFileServer.TextSnippet(
+                    id = t.id,
+                    text = "📝 [Note] ${t.text}"
+                )
+            )
+        }
+
+        hostItemsAdapter.updateTexts(combinedList)
     }
 
     private fun setupClientListeners() {
@@ -220,17 +275,34 @@ class MainActivity : AppCompatActivity() {
     private fun refreshClientData() {
         val serverUrl = clientServerUrlInput.text.toString().trim()
         val pin = clientPinInput.text.toString().trim().ifBlank { null }
-        if (serverUrl.isBlank()) return
-
-        hotspotClient.fetchFiles(serverUrl, pin) { result ->
-            runOnUiThread {
-                result.getOrNull()?.let { filesAdapter.updateFiles(it) }
-            }
+        if (serverUrl.isBlank()) {
+            clientStatusFeedbackText.text = "Please enter a valid server URL."
+            return
         }
 
-        hotspotClient.fetchTexts(serverUrl, pin) { result ->
-            runOnUiThread {
-                result.getOrNull()?.let { textsAdapter.updateTexts(it) }
+        clientStatusFeedbackText.text = "Connecting to $serverUrl..."
+
+        hotspotClient.fetchFiles(serverUrl, pin) { fileResult ->
+            hotspotClient.fetchTexts(serverUrl, pin) { textResult ->
+                runOnUiThread {
+                    if (fileResult.isSuccess && textResult.isSuccess) {
+                        clientConnectionBadge.text = "CONNECTED"
+                        clientConnectionBadge.setTextColor(0xFF15803D.toInt())
+                        clientConnectionBadge.setBackgroundColor(0xFFDCFCE7.toInt())
+                        clientStatusFeedbackText.text = "Connected successfully to $serverUrl"
+
+                        fileResult.getOrNull()?.let { filesAdapter.updateFiles(it) }
+                        textResult.getOrNull()?.let { textsAdapter.updateTexts(it) }
+                        Toast.makeText(this, "Connected and updated items!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        clientConnectionBadge.text = "FAILED"
+                        clientConnectionBadge.setTextColor(0xFFDC2626.toInt())
+                        clientConnectionBadge.setBackgroundColor(0xFFFEE2E2.toInt())
+
+                        val err = fileResult.exceptionOrNull()?.message ?: textResult.exceptionOrNull()?.message
+                        clientStatusFeedbackText.text = "Connection failed: ${err ?: "Could not reach server"}"
+                    }
+                }
             }
         }
     }
@@ -291,11 +363,13 @@ class MainActivity : AppCompatActivity() {
             onFileSaved = { fileName ->
                 runOnUiThread {
                     Toast.makeText(this, "Received file: $fileName", Toast.LENGTH_SHORT).show()
+                    refreshHostItems()
                 }
             },
             onTextReceived = { text ->
                 runOnUiThread {
                     Toast.makeText(this, "New text snippet received", Toast.LENGTH_SHORT).show()
+                    refreshHostItems()
                 }
             }
         )
@@ -339,6 +413,10 @@ class MainActivity : AppCompatActivity() {
             statusBadge.setTextColor(0xFF15803D.toInt())
             statusBadge.setBackgroundColor(0xFFDCFCE7.toInt())
 
+            globalStatusBadge.text = "HOSTING ON PORT $port"
+            globalStatusBadge.setTextColor(0xFF38BDF8.toInt())
+            globalStatusBadge.setBackgroundColor(0xFF0F172A.toInt())
+
             val primaryUrl = currentUrls.firstOrNull() ?: "http://localhost:$port"
             urlText.text = buildUrlDisplayText(
                 friendlyUrl = friendlyUrl,
@@ -356,6 +434,7 @@ class MainActivity : AppCompatActivity() {
             startButton.isEnabled = false
             stopButton.isEnabled = true
             Toast.makeText(this, "Server started.", Toast.LENGTH_SHORT).show()
+            refreshHostItems()
         } catch (error: Exception) {
             server = null
             currentPort = null
@@ -363,9 +442,14 @@ class MainActivity : AppCompatActivity() {
             currentHostname = null
             dnsHostname = null
             currentUrls = emptyList()
+
             statusBadge.text = "STOPPED"
             statusBadge.setTextColor(0xFFDC2626.toInt())
             statusBadge.setBackgroundColor(0xFFFEE2E2.toInt())
+
+            globalStatusBadge.text = "OFFLINE"
+            globalStatusBadge.setTextColor(0xFF94A3B8.toInt())
+
             urlText.text = error.message ?: getString(R.string.url_unavailable)
             qrImageView.visibility = View.GONE
             Toast.makeText(this, "Could not start server.", Toast.LENGTH_SHORT).show()
@@ -388,10 +472,15 @@ class MainActivity : AppCompatActivity() {
         statusBadge.text = "STOPPED"
         statusBadge.setTextColor(0xFFDC2626.toInt())
         statusBadge.setBackgroundColor(0xFFFEE2E2.toInt())
+
+        globalStatusBadge.text = "OFFLINE"
+        globalStatusBadge.setTextColor(0xFF94A3B8.toInt())
+
         urlText.text = getString(R.string.url_unavailable)
         qrImageView.visibility = View.GONE
         startButton.isEnabled = true
         stopButton.isEnabled = false
+        refreshHostItems()
     }
 
     private fun buildUrlDisplayText(
